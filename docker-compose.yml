@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
+    networks:
+      - auth-network
+
+  auth-service:
+    build: .
+    container_name: auth-service
+    environment:
+      PORT: 3001
+      JWT_SECRET: A1B2C3
+      MONGO_URL: mongodb://root:example@mongodb:27017/auth-service?authSource=admin
+    ports:
+      - "3000:3001"
+    depends_on:
+      - mongodb
+    networks:
+      - auth-network
+
+networks:
+  auth-network:
+    driver: bridge
