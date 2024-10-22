@@ -12,10 +12,11 @@ app.use(bodyParser.json());
 app.use('/api/auth', userRoutes);
 
 // MongoDB Connection
-mongoose.connect('mongodb://localhost:27017/auth-service', {
+mongoose.connect('mongodb://root:example@mongodb:27017/auth-service?authSource=admin', {
   //mongodb://root:example@mongodb:27017/auth-service?authSource=admin
   // useNewUrlParser: true,
   // useUnifiedTopology: true,
+  //mongodb://localhost:27017/auth-service
 })
   .then(() => console.log('Connected to MongoDB for Auth Service'))
   .catch((err) => console.error(err));
