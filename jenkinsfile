@@ -9,8 +9,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Clonar el repositorio
-                git branch: 'master, url: 'https://github.com/estebanjarav/electivaIIEstebanJaramillo.git'
+                // Clonar el repositorio utilizando el ID de la credencial en Jenkins
+                git credentialsId: 'token1', branch: 'master', url: 'https://github.com/estebanjarav/electivaIIEstebanJaramillo.git'
             }
         }
 
