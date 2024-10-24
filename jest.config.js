@@ -1,6 +1,4 @@
 module.exports = {
-    testEnvironment: 'node',
-    coverageDirectory: 'coverage',
-    verbose: true,
-  };
-  
+  testEnvironment: 'node',
+  testMatch: ['**/tests/**/*.test.js'],
+};
