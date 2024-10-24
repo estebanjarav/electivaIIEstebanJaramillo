@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+
+    environment {
+        // Definir variables de entorno si es necesario
+        MONGO_URL = 'mongodb://root:example@mongodb:27017/auth-service?authSource=admin'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Clonar el repositorio
+                git branch: 'master, url: 'https://github.com/estebanjarav/electivaIIEstebanJaramillo.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                // Construir la imagen del contenedor
+                sh 'docker-compose build'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                // Ejecutar pruebas usando Jest
+                sh 'docker-compose run --rm auth-service npm test'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                // Desplegar a producción (puedes usar terraform aquí o una simple docker-compose up)
+                sh 'docker-compose up -d'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline ejecutado con éxito!'
+        }
+        failure {
+            echo 'Pipeline falló.'
+        }
+    }
+}
