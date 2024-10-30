@@ -25,18 +25,6 @@ services:
       - mongodb
     networks:
       - network1
-  jenkins:
-    image: jenkins/jenkins:lts
-    container_name: jenkins
-    user: root
-    environment:
-      - DOCKER_HOST=tcp://docker:2376
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    ports:
-      - "8081:8080"
-    networks:
-      - network1
 
 networks:
   network1:
@@ -45,4 +33,4 @@ networks:
 volumes:
   mongodb-data:
     driver: local
-  jenkins_home:  
+  

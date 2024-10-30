@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        // Definir variables de entorno si es necesario
+        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
         MONGO_URL = 'mongodb://root:example@mongodb:27017/auth-service?authSource=admin'
     }
 
@@ -10,7 +11,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Clonar el repositorio utilizando el ID de la credencial en Jenkins
-                git credentialsId: 'token1', branch: 'master', url: 'https://github.com/estebanjarav/electivaIIEstebanJaramillo.git'
+                branch: 'master', url: 'https://github.com/estebanjarav/electivaIIEstebanJaramillo.git'
             }
         }
 
