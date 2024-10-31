@@ -4,11 +4,12 @@ pipeline {
     environment {
         AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        AWS_REGION            = 'us-east-1'
         MONGO_URL = 'mongodb://root:example@mongodb:27017/auth-service?authSource=admin'
     }
 
     stages {
-        stage('Clonar Repositorio') {
+        stage('Clone Repository') {
             steps {
                 git branch: 'master', 
                     url: 'https://github.com/estebanjarav/electivaIIEstebanJaramillo.git'
@@ -19,9 +20,9 @@ pipeline {
             steps {
                 script {
                     if (fileExists('docker-compose.yml')) {
-                        echo 'Success Build: docker-compose.yml found'
+                        echo 'Success Build: docker-compose.yml exist'
                     } else {
-                        error 'Build Failed: docker-compose.yml not found'
+                        error 'Build Failed: docker-compose.yml dont exist'
                     }
                 }
             }
@@ -31,23 +32,53 @@ pipeline {
             steps {
                 script {
                     if (fileExists('jest.config.js')) {
-                        echo 'Success Build: jest.config.js found'
+                        echo 'Success Build: jest.config.js exist'
                     } else {
-                        error 'Test Failed: jest.config.js not found'
+                        error 'Test Failed: jest.config.js dont exist'
                     }
                 }
             }
         }
 
-    
+        stage('Terraform Init') {
+            steps {
+                dir('terraform') {
+                    sh 'terraform init'
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                dir('terraform') {
+                    sh 'terraform plan -out=tfplan'
+                }
+            }
+        }
+
+        stage('Approval') {
+            steps {
+                script {
+                    input message: 'Continue with terraform Apply?', ok: 'Yes, apply changes'
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                dir('terraform') {
+                    sh 'terraform apply -auto-approve tfplan'
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo 'Pipeline ejecutado con éxito!'
+            echo 'Success Pipeline!'
         }
         failure {
-            echo 'Pipeline falló.'
+            echo 'Fall Pipeline!'
         }
     }
 }
