@@ -39,8 +39,6 @@ pipeline {
             }
         }
 
-    }
-
         stage('Terraform Validate') {
             steps {
                 dir('terraform') {
@@ -80,6 +78,10 @@ pipeline {
                 }
             }
         }
+
+    }
+
+        
     post {
         success {
             echo 'Success Pipeline!'
