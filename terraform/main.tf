@@ -33,7 +33,7 @@ resource "aws_security_group" "docker_sg" {
 # Instancia EC2 con Docker
 resource "aws_instance" "docker_instance" {
   ami           = "ami-0c55b159cbfafe1f0" # Ubuntu Server AMI
-  instance_type = "t2.micro"
+  instance_type = "t3.medium"
   security_groups = [aws_security_group.docker_sg.name]
   tags = {
     Name = "docker-instance"
@@ -43,25 +43,6 @@ resource "aws_instance" "docker_instance" {
   provisioner "file" {
     source      = "../docker-compose.yml"
     destination = "/home/ubuntu/docker-compose.yml"
-
-    connection {
-      type        = "ssh"
-      user        = "ubuntu"
-      private_key = file("path/to/your/private-key.pem") # Cambia esta ruta
-      host        = self.public_ip
-    }
-  }
-
-  # Provisioner para instalar Docker y ejecutar docker-compose
-  provisioner "remote-exec" {
-    inline = [
-      "sudo apt update -y",
-      "sudo apt install -y docker.io docker-compose",
-      "sudo systemctl start docker",
-      "sudo usermod -aG docker ubuntu",
-      "cd /home/ubuntu",
-      "sudo docker-compose up -d" # Ejecuta docker-compose para desplegar los contenedores
-    ]
 
     connection {
       type        = "ssh"
