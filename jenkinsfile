@@ -10,8 +10,9 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'master', 
-                    url: 'https://github.com/estebanjarav/electivaIIEstebanJaramillo.git'
+                script {    
+                echo 'Success Clone repository'
+                }
             }
         }
 
