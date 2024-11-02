@@ -6,29 +6,8 @@ variable "aws_region" {
   default = "us-east-1"
 }
 
-# VPC para ECS
-resource "aws_vpc" "vpc" {
-  cidr_block = "10.0.0.0/16"
-  tags = {
-    Name = "ecs-vpc"
-  }
-}
-
-# Subnet pública
-resource "aws_subnet" "public_subnet" {
-  vpc_id                  = aws_vpc.vpc.id
-  cidr_block              = "10.0.1.0/24"
-  map_public_ip_on_launch = true
-  availability_zone       = "us-east-1a"
-  tags = {
-    Name = "public-subnet"
-  }
-}
-
-# Security Group para los contenedores ECS
-resource "aws_security_group" "ecs_sg" {
-  vpc_id = aws_vpc.vpc.id
-
+# Security Group para la instancia
+resource "aws_security_group" "docker_sg" {
   ingress {
     from_port   = 4001
     to_port     = 4001
@@ -51,75 +30,51 @@ resource "aws_security_group" "ecs_sg" {
   }
 }
 
-# Repositorio ECR para la imagen de auth-service
-resource "aws_ecr_repository" "auth_service" {
-  name = "auth-service"
-}
+# Instancia EC2 con Docker
+resource "aws_instance" "docker_instance" {
+  ami           = "ami-0c55b159cbfafe1f0" # Ubuntu Server AMI
+  instance_type = "t2.micro"
+  security_groups = [aws_security_group.docker_sg.name]
+  tags = {
+    Name = "docker-instance"
+  }
 
-# Clúster ECS
-resource "aws_ecs_cluster" "ecs_cluster" {
-  name = "auth-service-cluster"
-}
+  # Provisioner para copiar el archivo docker-compose.yml
+  provisioner "file" {
+    source      = "../docker-compose.yml"
+    destination = "/home/ubuntu/docker-compose.yml"
 
-# Definición de la Tarea ECS
-resource "aws_ecs_task_definition" "auth_service_task" {
-  family                   = "auth-service-task"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = 512
-  memory                   = 1024
-
-  container_definitions = jsonencode([
-    {
-      name      = "mongodb"
-      image     = "mongo:latest"
-      essential = true
-      environment = [
-        { name = "MONGO_INITDB_ROOT_USERNAME", value = "root" },
-        { name = "MONGO_INITDB_ROOT_PASSWORD", value = "example" }
-      ]
-      portMappings = [
-        { containerPort = 27017, hostPort = 27017 }
-      ]
-    },
-    {
-      name      = "auth-service"
-      image     = aws_ecr_repository.auth_service.repository_url
-      essential = true
-      environment = [
-        { name = "PORT", value = "4001" },
-        { name = "JWT_SECRET", value = "A1B2C3" },
-        { name = "MONGO_URL", value = "mongodb://root:example@mongodb:27017/auth-service?authSource=admin" }
-      ]
-      portMappings = [
-        { containerPort = 4001, hostPort = 4001 }
-      ]
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file("path/to/your/private-key.pem") # Cambia esta ruta
+      host        = self.public_ip
     }
-  ])
-}
+  }
 
-# Servicio ECS para lanzar la tarea
-resource "aws_ecs_service" "auth_service" {
-  name            = "auth-service"
-  cluster         = aws_ecs_cluster.ecs_cluster.id
-  task_definition = aws_ecs_task_definition.auth_service_task.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
+  # Provisioner para instalar Docker y ejecutar docker-compose
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt update -y",
+      "sudo apt install -y docker.io docker-compose",
+      "sudo systemctl start docker",
+      "sudo usermod -aG docker ubuntu",
+      "cd /home/ubuntu",
+      "sudo docker-compose up -d" # Ejecuta docker-compose para desplegar los contenedores
+    ]
 
-  network_configuration {
-    subnets         = [aws_subnet.public_subnet.id]
-    security_groups = [aws_security_group.ecs_sg.id]
-    assign_public_ip = true
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file("path/to/your/private-key.pem") # Cambia esta ruta
+      host        = self.public_ip
+    }
   }
 }
 
-# Salidas del Despliegue
-output "ecr_repository_url" {
-  description = "URL del repositorio ECR"
-  value       = aws_ecr_repository.auth_service.repository_url
+output "instance_ip" {
+  description = "Dirección IP pública de la instancia EC2"
+  value       = aws_instance.docker_instance.public_ip
 }
 
-output "ecs_service_name" {
-  description = "Nombre del servicio ECS"
-  value       = aws_ecs_service.auth_service.name
-}
+

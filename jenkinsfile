@@ -5,7 +5,6 @@ pipeline {
         AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
         AWS_REGION            = 'us-east-1'
-        MONGO_URL = 'mongodb://root:example@mongodb:27017/auth-service?authSource=admin'
     }
 
     stages {
@@ -16,13 +15,13 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Building Test Environment') {
             steps {
                 script {
                     if (fileExists('docker-compose.yml')) {
                         echo 'Success Build: docker-compose.yml exist'
                     } else {
-                        error 'Build Failed: docker-compose.yml dont exist'
+                        error 'Build Failed: docker-compose.yml don\'t exist'
                     }
                 }
             }
@@ -34,24 +33,8 @@ pipeline {
                     if (fileExists('jest.config.js')) {
                         echo 'Success Build: jest.config.js exist'
                     } else {
-                        error 'Test Failed: jest.config.js do not exist'
+                        error 'Test Failed: jest.config.js don\'t exist'
                     }
-                }
-            }
-        }
-
-        stage('Terraform Init') {
-            steps {
-                dir('terraform') {
-                    sh 'terraform init'
-                }
-            }
-        }
-
-        stage('Terraform Plan') {
-            steps {
-                dir('terraform') {
-                    sh 'terraform plan -out=tfplan'
                 }
             }
         }
@@ -78,7 +61,8 @@ pipeline {
             echo 'Success Pipeline!'
         }
         failure {
-            echo 'Fall Pipeline!'
+            echo 'Pipeline Failed!'
         }
     }
 }
+
