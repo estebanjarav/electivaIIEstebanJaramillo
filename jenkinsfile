@@ -21,7 +21,7 @@ pipeline {
                     if (fileExists('docker-compose.yml')) {
                         echo 'Success Build: docker-compose.yml exist'
                     } else {
-                        error 'Build Failed: docker-compose.yml don\'t exist'
+                        error 'Build Failed: docker-compose.yml dont exist'
                     }
                 }
             }
