@@ -52,10 +52,18 @@ resource "aws_instance" "docker_instance" {
 
   user_data = <<-EOF
               #!/bin/bash
+              # Actualiza los paquetes e instala Docker y Docker Compose
               apt update -y
-              apt install -y docker.io docker-compose
+              apt install -y docker.io docker-compose git
+              
+              # Inicia Docker
               systemctl start docker
+              
+              # Cambia permisos al socket de Docker
+              chmod 666 /var/run/docker.sock
               cd /home/ubuntu
+              git clone https://github.com/estebanjarav/electivaIIEstebanJaramillo.git
+              cd repo  # Cambia 'repo' por el nombre del repositorio clonado
               docker-compose up -d
               EOF
 }
