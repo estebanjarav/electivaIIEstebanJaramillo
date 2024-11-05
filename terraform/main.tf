@@ -60,7 +60,7 @@ resource "aws_instance" "docker_instance" {
 
             # Clona el repositorio en el directorio /home/ubuntu y cambia el propietario
             cd /home/ubuntu
-            git clone https://github.com/usuario/electivaIIEstebanJaramillo.git
+            git clone https://github.com/estebanjarav/electivaIIEstebanJaramillo.git
             
             # Cambiar los permisos y el propietario para que root y otros usuarios puedan acceder
             chown -R ubuntu:ubuntu /home/ubuntu/electivaIIEstebanJaramillo
