@@ -34,7 +34,7 @@ pipeline {
                     if (fileExists('jest.config.js')) {
                         echo 'Success Build: jest.config.js exists'
                     } else {
-                        error 'Test Failed: jeest.config.js does not exist'
+                        error 'Test Fahiled: jeest.config.js does not exist'
                     }
                 }
             }
