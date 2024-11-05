@@ -41,7 +41,7 @@ resource "aws_security_group" "docker_sg" {
 }
 
 # Instancia EC2 con el rol IAM y script de user_data para instalar Docker
-resource "aws_instance" "Auth Service" {
+resource "aws_instance" "docker_instance" {
   ami                    = "ami-0866a3c8686eaeeba" # Ubuntu Server AMI
   instance_type          = "t3.medium"
   security_groups        = [aws_security_group.docker_sg.name]
