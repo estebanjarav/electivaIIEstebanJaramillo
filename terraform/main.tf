@@ -40,32 +40,56 @@ resource "aws_security_group" "docker_sg" {
   }
 }
 
-# Instancia EC2 con Docker
+# Instancia EC2 con el rol IAM para SSM
 resource "aws_instance" "docker_instance" {
-  ami           = "ami-0c55b159cbfafe1f0" # Ubuntu Server AMI
-  instance_type = "t3.medium"
-  security_groups = [aws_security_group.docker_sg.name]
+  ami                    = "ami-0c55b159cbfafe1f0" # Ubuntu Server AMI
+  instance_type          = "t3.medium"
+  security_groups        = [aws_security_group.docker_sg.name]
+  iam_instance_profile   = aws_iam_instance_profile.ssm_profile.name
   tags = {
     Name = "docker-instance"
   }
+}
 
-  # Provisioner para copiar el archivo docker-compose.yml
-  provisioner "file" {
-    source      = "../docker-compose.yml"
-    destination = "/home/ubuntu/docker-compose.yml"
+# Perfil de instancia que asocia el rol IAM a la instancia EC2
+resource "aws_iam_instance_profile" "ssm_profile" {
+  name = "ssm-profile"
+  role = "role1" # Utiliza el rol IAM creado
+}
 
-    connection {
-      type        = "ssh"
-      user        = "ubuntu"
-      private_key = file("path/to/your/private-key.pem") # Cambia esta ruta
-      host        = self.public_ip
-    }
-  }
+# Documento de SSM para instalar Docker y Docker Compose
+resource "aws_ssm_document" "install_docker" {
+  name          = "InstallDocker"
+  document_type = "Command"
+
+  content = jsonencode({
+    schemaVersion = "2.2"
+    description   = "Instala Docker y Docker Compose"
+    mainSteps = [
+      {
+        action = "aws:runShellScript"
+        name   = "installDocker"
+        inputs = {
+          runCommand = [
+            "sudo apt update -y",
+            "sudo apt install -y docker.io docker-compose",
+            "sudo systemctl start docker",
+            "sudo usermod -aG docker ubuntu"
+          ]
+        }
+      }
+    ]
+  })
+}
+
+# Ejecuta el documento SSM en la instancia EC2 para instalar Docker
+resource "aws_ssm_command" "run_install_docker" {
+  document_name = aws_ssm_document.install_docker.name
+  instance_ids  = [aws_instance.docker_instance.id]
+  depends_on    = [aws_instance.docker_instance]
 }
 
 output "instance_ip" {
   description = "Dirección IP pública de la instancia EC2"
   value       = aws_instance.docker_instance.public_ip
 }
-
-

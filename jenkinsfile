@@ -11,7 +11,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 script {  
-                echo 'Success Clone repository'
+                    echo 'Success Clone repository'
                 }
             }
         }
@@ -20,9 +20,9 @@ pipeline {
             steps {
                 script {
                     if (fileExists('docker-compose.yml')) {
-                        echo 'Success Build: docker-compose.yml exist'
+                        echo 'Success Build: docker-compose.yml exists'
                     } else {
-                        error 'Build Failed: docker-compose.yml dont exist'
+                        error 'Build Failed: docker-compose.yml does not exist'
                     }
                 }
             }
@@ -32,9 +32,9 @@ pipeline {
             steps {
                 script {
                     if (fileExists('jest.config.js')) {
-                        echo 'Success Build: jest.config.js exist'
+                        echo 'Success Build: jest.config.js exists'
                     } else {
-                        error 'Test Failed: jest.config.js dont exist'
+                        error 'Test Failed: jest.config.js does not exist'
                     }
                 }
             }
@@ -73,8 +73,8 @@ pipeline {
                 }
             }
         }
-        
-		stage('Approval') {
+
+        stage('Approval') {
             steps {
                 script {
                     input message: 'Continue with terraform Apply?', ok: 'Yes, apply changes'
@@ -89,17 +89,16 @@ pipeline {
                 }
             }
         }
-
     }
 
-        
     post {
         success {
-            echo 'Success Pipeline!'
+            echo 'Pipeline succeeded!'
         }
         failure {
-            echo 'Pipelinne Failed!'
+            echo 'Pipeline failed!'
         }
     }
 }
+
 
