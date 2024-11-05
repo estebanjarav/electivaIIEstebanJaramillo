@@ -52,24 +52,21 @@ resource "aws_instance" "docker_instance" {
 
   user_data = <<-EOF
             #!/bin/bash
-            # Actualiza los paquetes e instala Docker, Docker Compose y Git
             apt update -y
             apt install -y docker.io docker-compose git
-            
-            # Inicia Docker
+
             systemctl start docker
-            
-            # Cambia permisos al socket de Docker para que no haya problemas de permisos
             chmod 666 /var/run/docker.sock
 
-            # Clona el repositorio con el Dockerfile y docker-compose.yml
+            # Clona el repositorio en el directorio /home/ubuntu y cambia el propietario
             cd /home/ubuntu
-            git clone https://github.com/usuario/electivaIIEstebanJaramillo.git 
+            git clone https://github.com/usuario/electivaIIEstebanJaramillo.git
             
-            # Cambiar los permisos del directorio clonado para permitir el acceso a otros usuarios
+            # Cambiar los permisos y el propietario para que root y otros usuarios puedan acceder
             chown -R ubuntu:ubuntu /home/ubuntu/electivaIIEstebanJaramillo
+            chmod -R 755 /home/ubuntu/electivaIIEstebanJaramillo
 
-            # Cambiar al directorio del repositorio clonado
+            # Cambiar al directorio clonado y ejecuta Docker Compose
             cd electivaIIEstebanJaramillo
             docker-compose up -d
             EOF
