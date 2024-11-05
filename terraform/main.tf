@@ -53,10 +53,10 @@ resource "aws_instance" "docker_instance" {
   # Script de user_data para instalar Docker y Docker Compose
   user_data = <<-EOF
               #!/bin/bash
-              sudo apt update -y
-              sudo apt install -y docker.io docker-compose
-              sudo systemctl start docker
-              sudo usermod -aG docker ubuntu
+              apt update -y
+              apt install -y docker.io docker-compose
+              systemctl start docker
+              usermod -aG docker ubuntu
               EOF
 }
 
