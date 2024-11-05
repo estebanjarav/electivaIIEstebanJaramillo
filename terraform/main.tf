@@ -40,7 +40,7 @@ resource "aws_security_group" "docker_sg" {
   }
 }
 
-# Instancia EC2 con el rol IAM para SSM
+# Instancia EC2 con el rol IAM y script de user_data para instalar Docker
 resource "aws_instance" "docker_instance" {
   ami                    = "ami-0c55b159cbfafe1f0" # Ubuntu Server AMI
   instance_type          = "t3.medium"
@@ -49,44 +49,21 @@ resource "aws_instance" "docker_instance" {
   tags = {
     Name = "docker-instance"
   }
+
+  # Script de user_data para instalar Docker y Docker Compose
+  user_data = <<-EOF
+              #!/bin/bash
+              sudo apt update -y
+              sudo apt install -y docker.io docker-compose
+              sudo systemctl start docker
+              sudo usermod -aG docker ubuntu
+              EOF
 }
 
 # Perfil de instancia que asocia el rol IAM a la instancia EC2
 resource "aws_iam_instance_profile" "ssm_profile" {
   name = "ssm-profile"
   role = "role1" # Utiliza el rol IAM creado
-}
-
-# Documento de SSM para instalar Docker y Docker Compose
-resource "aws_ssm_document" "install_docker" {
-  name          = "InstallDocker"
-  document_type = "Command"
-
-  content = jsonencode({
-    schemaVersion = "2.2"
-    description   = "Instala Docker y Docker Compose"
-    mainSteps = [
-      {
-        action = "aws:runShellScript"
-        name   = "installDocker"
-        inputs = {
-          runCommand = [
-            "sudo apt update -y",
-            "sudo apt install -y docker.io docker-compose",
-            "sudo systemctl start docker",
-            "sudo usermod -aG docker ubuntu"
-          ]
-        }
-      }
-    ]
-  })
-}
-
-# Ejecuta el documento SSM en la instancia EC2 para instalar Docker
-resource "aws_ssm_command" "run_install_docker" {
-  document_name = aws_ssm_document.install_docker.name
-  instance_ids  = [aws_instance.docker_instance.id]
-  depends_on    = [aws_instance.docker_instance]
 }
 
 output "instance_ip" {
