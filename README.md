@@ -35,5 +35,26 @@
 
 ---
 
-## 🗃️ Estructura del proyecto
+---
+
+## 🧪 Pruebas
+
+```bash
+npm install
+npm run test
+Las pruebas con Jest se ejecutan automáticamente en el pipeline Jenkins en cada push a master.
+
+📡 Endpoints principales
+Método	Ruta	Descripción
+POST	/register	Registrar nuevo usuario
+POST	/login	Autenticación con JWT
+GET	/me	Ver datos del usuario
+
+---
+
+## 📜 Licencia
+
+MIT © 2025 - EstebanJaramilloV
+---
+
 
